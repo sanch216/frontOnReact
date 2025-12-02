@@ -11,7 +11,10 @@ export default function Registration() {
     } = useForm();
 
     const onSubmit = (data) => {
-        fetch('http://localhost:8080/api/auth/register', {
+        const { confirmPassword, ...submitData } = data;
+
+        fetch('http://localhost:8080/api/auth/client_signup', {
+
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -24,7 +27,10 @@ export default function Registration() {
                 alert('Регистрация прошла успешно!')
             })
             .catch(error => alert(error.message))
+
     };
+
+
 
     const password = watch('password');
 
@@ -47,7 +53,6 @@ export default function Registration() {
                     >
                         Регистрация
                     </motion.h1>
-
                     <form onSubmit={handleSubmit(onSubmit)}>
                         {/* Email */}
                         <motion.div
@@ -81,7 +86,7 @@ export default function Registration() {
                         >
                             <label className={styles.label}>Имя</label>
                             <input
-                                {...register('name', {
+                                {...register('fullName', {
                                     required: 'Пожалуйста, введите ваше имя',
                                 })}
                                 placeholder="Адольф"
@@ -99,7 +104,7 @@ export default function Registration() {
                         >
                             <label className={styles.label}>Телефон</label>
                             <input
-                                {...register('phone', {
+                                {...register('phoneNumber', {
                                     required: 'Пожалуйста, введите ваш номер телефона',
                                     pattern: {
                                         value: e164,
@@ -153,6 +158,20 @@ export default function Registration() {
                                 className={styles.input}
                             />
                             {errors.confirmPassword && <span className={styles.error}>{errors.confirmPassword.message}</span>}
+                        </motion.div>
+
+                        <motion.div
+                            className={styles.field}
+                            initial={{ opacity: 0, x: -50 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.8 }}
+                        >
+                            <label className={styles.label}>Выберите роль</label>
+                            <select className={styles.input} name="userType"
+                                {...register('userType')}>
+                                <option value="TYPE_CLIENT">Пользователь</option>
+                                <option value="TYPE_COURIER">Курьер</option>
+                            </select>
                         </motion.div>
 
                         <motion.button
