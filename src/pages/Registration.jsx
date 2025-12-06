@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import styles from './Registration.module.css';
+import api from '../api';
 
 export default function Registration() {
     const {
@@ -10,27 +11,37 @@ export default function Registration() {
         watch,
     } = useForm();
 
-    const onSubmit = (data) => {
+    const onSubmit = async (data) => {
         const { confirmPassword, ...submitData } = data;
 
-        fetch('http://localhost:8080/api/auth/client_signup', {
-
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-        })
-            .then(res => {
-                if (!res.ok) throw new Error('Ошибка регистрации')
-                return res.json()
-            })
-            .then(responseData => {
-                alert('Регистрация прошла успешно!')
-            })
-            .catch(error => alert(error.message))
-
+        // выбрать endpoint по выбранной роли
+        // значения в select: "CLIENT" или "COURIER" — используем эти строки
+        const role = submitData.userType || 'CLIENT';
+        const endpoint = role === 'COURIER' ? '/auth/courier_signup' : '/auth/client_signup';
+        try {
+            console.info('Signup payload:', { endpoint, submitData });
+            // явно без credentials — тест на сторону фронта
+            const res = await api.post(endpoint, submitData, { withCredentials: false });
+            alert('Регистрация прошла успешно!');
+        } catch (err) {
+            console.error('Signup error raw:', err);
+            if (err?.response) {
+                const status = err.response.status;
+                const statusText = err.response.statusText;
+                const body = err.response.data;
+                const headers = err.response.headers;
+                console.error('Signup error details:', { status, statusText, headers, body });
+                // backend may return a plain string or an object { message: "..." }
+                const serverMessage = typeof body === 'string' ? body : (body?.message || null);
+                alert(serverMessage || statusText || `Ошибка регистрации: ${status}`);
+            } else if (err?.request) {
+                console.error('No response received, request:', err.request);
+                alert('Сервер не ответил. Проверьте CORS / сетевое соединение.');
+            } else {
+                alert(err.message || 'Ошибка сети');
+            }
+        }
     };
-
-
 
     const password = watch('password');
 
@@ -89,10 +100,10 @@ export default function Registration() {
                                 {...register('fullName', {
                                     required: 'Пожалуйста, введите ваше имя',
                                 })}
-                                placeholder="Адольф"
+                                placeholder="Иван"
                                 className={styles.input}
                             />
-                            {errors.name && <span className={styles.error}>{errors.name.message}</span>}
+                            {errors.fullName && <span className={styles.error}>{errors.fullName.message}</span>}
                         </motion.div>
 
                         {/* Телефон */}
@@ -114,7 +125,7 @@ export default function Registration() {
                                 placeholder="+996148814881"
                                 className={styles.input}
                             />
-                            {errors.phone && <span className={styles.error}>{errors.phone.message}</span>}
+                            {errors.phoneNumber && <span className={styles.error}>{errors.phoneNumber.message}</span>}
                         </motion.div>
 
                         {/* Пароль */}
@@ -169,8 +180,8 @@ export default function Registration() {
                             <label className={styles.label}>Выберите роль</label>
                             <select className={styles.input} name="userType"
                                 {...register('userType')}>
-                                <option value="TYPE_CLIENT">Пользователь</option>
-                                <option value="TYPE_COURIER">Курьер</option>
+                                <option value="CLIENT">Пользователь</option>
+                                <option value="COURIER">Курьер</option>
                             </select>
                         </motion.div>
 

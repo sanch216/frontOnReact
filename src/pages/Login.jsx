@@ -1,12 +1,47 @@
 import { useForm } from 'react-hook-form'
-import { use } from 'react'
+import api from '../api';
 import { motion } from 'framer-motion';
 import styles from './Registration.module.css';
+import { use } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 
 export default function Login() {
 
-    const { register, handleSubmit, formState: { errors } } = useForm();;
+    const { register, handleSubmit, formState: { errors } } = useForm();
+    const navigate = useNavigate();
+    const onSubmit = async (data) => {
+        try {
+            const payload = { email: data.email, password: data.password };
+            console.info('Login submit payload:', payload);
+            // явно без credentials — тест на сторону фронта
+            const res = await api.post('/auth/login', payload, { withCredentials: false }); // -> /api/auth/login через proxy
+            alert('Успешная авторизация');
+            navigate('/order');
+        } catch (err) {
+            console.error('Login error raw:', err);
+            if (err?.response) {
+                const status = err.response.status;
+                const statusText = err.response.statusText;
+                const body = err.response.data;
+                const headers = err.response.headers;
+                console.error('Login error details:', { status, statusText, headers, body });
+                if (status === 401) {
+                    // если body пустой, покажем статусText и важные заголовки
+                    const message = body?.message || statusText || 'Неверный email или пароль (401)';
+                    const extra = headers?.['www-authenticate'] ? ` — WWW-Authenticate: ${headers['www-authenticate']}` : '';
+                    alert(message + extra);
+                } else {
+                    alert(body?.message || `Ошибка сервера: ${status} ${statusText}`);
+                }
+            } else if (err?.request) {
+                console.error('No response received, request:', err.request);
+                alert('Сервер не ответил. Проверьте CORS / сетевое соединение.');
+            } else {
+                alert(err.message || 'Ошибка сети');
+            }
+        }
+    };
 
     return (
         <div className={styles.container}>
@@ -25,7 +60,7 @@ export default function Login() {
                         className={styles.title}
                     >Авторизация </motion.h1>
 
-                    <form onSubmit={handleSubmit((data) => console.log(data))}>
+                    <form onSubmit={handleSubmit(onSubmit)}>
                         <motion.div
                             className={styles.field}
                             initial={{ opacity: 0, x: -50 }}
@@ -60,8 +95,9 @@ export default function Login() {
                                 <input
                                     className={styles.input}
                                     id='password'
+                                    type="password"
                                     {...register('password', {
-                                        required: "Пожалуйста, введите ваше Имя",
+                                        required: "Пожалуйста, введите пароль",
                                     })} />
 
                             </div>
