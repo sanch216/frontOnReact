@@ -2,10 +2,12 @@ import { useForm } from 'react-hook-form'
 import api from '../api';
 import { motion } from 'framer-motion';
 import styles from './Registration.module.css';
+import { useNavigate } from 'react-router-dom';
+
 
 
 export default function Login() {
-
+    const navigate = useNavigate();
     const { register, handleSubmit, formState: { errors } } = useForm();
 
     const onSubmit = async (data) => {
@@ -15,6 +17,8 @@ export default function Login() {
             // явно без credentials — тест на сторону фронта
             const res = await api.post('/auth/login', payload, { withCredentials: false }); // -> /api/auth/login через proxy
             alert('Успешная авторизация');
+            navigate('/order');
+
         } catch (err) {
             console.error('Login error raw:', err);
             if (err?.response) {
