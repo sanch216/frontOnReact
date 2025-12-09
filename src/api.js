@@ -1,8 +1,94 @@
 import axios from "axios";
 
+const BASE = import.meta.env.VITE_API_BASE || "/api";
 const api = axios.create({
-    baseURL: "http://localhost:8080/api",
-    headers: { "Content-Type": 'application.json' },
-})
+    baseURL: BASE,
+    headers: { "Content-Type": "application/json" },
+    timeout: 10000,
+    withCredentials: false, // по умолчанию false — можно включить функцией setWithCredentials
+});
+
+// удобно: вызвать в консоли window.api.pingBackend() для проверки соединения
+async function pingBackend() {
+    const tryPaths = ['/actuator/health', '/health', '/api/health', '/'];
+    for (const p of tryPaths) {
+        try {
+            const res = await api.get(p);
+            return { path: p, status: res.status, data: res.data };
+        } catch (e) {
+            // пропускаем и пробуем следующий
+        }
+    }
+    // если ничего не ответило успешно — пробуем прямой запрос к базовому URL (fetch для полной информации)
+    try {
+        const res = await fetch(api.defaults.baseURL, { method: 'GET', credentials: api.defaults.withCredentials ? 'include' : 'omit' });
+        return { path: api.defaults.baseURL, status: res.status, statusText: res.statusText };
+    } catch (e) {
+        throw new Error('Ping failed: ' + (e.message || String(e)));
+    }
+}
+
+// helper для переключения (используйте только для тестов/диагностики)
+export function setWithCredentials(flag) {
+    api.defaults.withCredentials = !!flag;
+}
+
+// экспортируем функцию для удобного вызова из консоли
+export { pingBackend };
+
+// логируем исходящие запросы (полезно для диагностики 401)
+api.interceptors.request.use((config) => {
+    try {
+        console.info('[API REQUEST]', {
+            method: config.method,
+            url: config.url,
+            baseURL: config.baseURL,
+            data: config.data,
+            headers: config.headers,
+        });
+    } catch (e) {
+        console.warn('Failed to log request', e);
+    }
+    return config;
+}, (err) => Promise.reject(err));
+
+// логируем ответы и расширенно обрабатываем 401
+api.interceptors.response.use(
+    (response) => {
+        // короткий лог успешных ответов
+        try {
+            console.info('[API RESPONSE]', {
+                url: response.config?.url,
+                status: response.status,
+                statusText: response.statusText,
+                headers: response.headers,
+                data: response.data,
+            });
+        } catch (e) { /* ignore */ }
+        return response;
+    },
+    (error) => {
+        const status = error?.response?.status;
+        const serverData = error?.response?.data;
+        const statusText = error?.response?.statusText;
+        const headers = error?.response?.headers;
+        const req = error?.request;
+
+        console.error('[API ERROR] status:', status, 'statusText:', statusText);
+        console.error('[API ERROR] response.data:', serverData);
+        console.error('[API ERROR] response.headers:', headers);
+        console.error('[API ERROR] request object:', req);
+
+        if (status === 401) {
+            // может быть пустой body — смотрим заголовки (WWW-Authenticate) и statusText
+            console.warn('API 401 Unauthorized — headers/statusText:', { statusText, headers });
+            // при желании можно триггерить глобальный редирект
+            // window.location.href = '/login';
+        } else {
+            console.error('API error', status, serverData || error.message);
+        }
+        return Promise.reject(error);
+    }
+);
 
 export default api;

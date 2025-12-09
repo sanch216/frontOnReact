@@ -10,7 +10,15 @@ export default defineConfig({
       },
     }),
   ],
-  proxy: {
-    '/api': 'http://localhost:8080',
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+        // optional: rewrite path if backend expects different prefix
+        // rewrite: (path) => path.replace(/^\/api/, '/api')
+      }
+    }
   }
 })
