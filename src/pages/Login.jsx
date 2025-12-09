@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form'
-import api from '../api';
+import api, { setToken } from '../api';
 import { motion } from 'framer-motion';
 import styles from './Registration.module.css';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +16,10 @@ export default function Login() {
             console.info('Login submit payload:', payload);
             // явно без credentials — тест на сторону фронта
             const res = await api.post('/auth/login', payload, { withCredentials: false }); // -> /api/auth/login через proxy
+            const token = res.data;
+            // ← ДОБАВЛЯЕМ: сохраняем токен
+            setToken(res.data);
+
             alert('Успешная авторизация');
             navigate('/order');
 

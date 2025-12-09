@@ -8,6 +8,7 @@ import { Route, Routes } from 'react-router-dom'
 import Registration from './pages/Registration'
 import Login from './pages/Login'
 import Order from './pages/Order'
+import ProtectedRoute from './Components/ProtectedRoutes'
 
 function App() {
   return (
@@ -17,7 +18,14 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/registration" element={<Registration />} />
         <Route path="/login" element={<Login />} />
-        <Route path='/order' element={<Order />} />
+
+
+        <Route path='/order' element={
+          <ProtectedRoute>
+            <Order />
+          </ProtectedRoute>} />
+
+
       </Routes>
     </div>
   )

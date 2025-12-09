@@ -1,7 +1,8 @@
-import { useForm } from 'react-hook-form';
+import { set, useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import styles from './Registration.module.css';
 import api from '../api';
+import { setToken } from '../api';
 
 export default function Registration() {
     const {
@@ -21,6 +22,8 @@ export default function Registration() {
             console.info('Signup payload:', { endpoint, submitData });
             // явно без credentials — тест на сторону фронта
             const res = await api.post(endpoint, submitData, { withCredentials: false });
+            const token = res.data;
+            setToken(token);  // сохраняем токен после регистрации
             alert('Регистрация прошла успешно!');
         } catch (err) {
             console.error('Signup error raw:', err);
