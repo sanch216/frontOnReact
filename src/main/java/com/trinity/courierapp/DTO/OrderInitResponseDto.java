@@ -71,6 +71,4 @@ public class OrderInitResponseDto {
     private String destAddress;
     private String destPlaceId;
 
-
-
 }

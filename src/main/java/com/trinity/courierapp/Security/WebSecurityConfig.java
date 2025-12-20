@@ -51,9 +51,9 @@ public class WebSecurityConfig {
                         s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(a ->
-                        a.anyRequest().permitAll()
-//                        a.requestMatchers("/api/auth/login", "/api/auth/client_signup", "/api/auth/courier_signup", "/api/auth/refresh").permitAll()
-//                                .anyRequest().authenticated()
+//                        a.anyRequest().permitAll()
+                        a.requestMatchers("/api/auth/login", "/api/auth/client_signup", "/api/auth/courier_signup", "/api/auth/refresh").permitAll()
+                                .anyRequest().authenticated()
                 );
 
     http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

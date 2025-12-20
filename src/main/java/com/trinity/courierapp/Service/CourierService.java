@@ -20,9 +20,6 @@ public class CourierService {
     @Autowired
     private CommonUtils commonUtils;
 
-    @Autowired
-    private GoogleMapsService googleMapsService;
-
     // searching for courier in 100 km radius
     public FindCourierResult findNearestCourierFurther(OrderInitResponseDto dto) {
         boolean found = false;
@@ -62,7 +59,6 @@ public class CourierService {
 
         return new FindCourierResult(true, finalDuration,finalPrice,courierToARoute,courierToAMins,routeDist,courierId);
     }
-
 
     //searching for courier in 10 km radius
     public FindCourierResult findNearestCourier(OrderInitResponseDto dto) {

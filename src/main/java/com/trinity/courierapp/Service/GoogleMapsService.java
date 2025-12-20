@@ -53,20 +53,37 @@ public class GoogleMapsService {
     }
 
     public String getRegionFromPlaceId(String placeId) {
-        String apiKey = "YOUR_API_KEY";
-        String url = "https://maps.googleapis.com/maps/api/place/details/json?place_id=" + placeId + "&fields=address_component&key=" + apiKey;
+        String url = "https://maps.googleapis.com/maps/api/place/details/json" +
+                "?place_id=" + placeId +
+                "&fields=address_component" +
+                "&key=" + apiKey;
 
         Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-        List<Map<String, Object>> components = (List<Map<String, Object>>)
-                ((Map<String, Object>) response.get("result")).get("address_components");
+
+        if (response == null) {
+            throw new IllegalStateException("No response from Google Places API");
+        }
+
+        Map<String, Object> result = (Map<String, Object>) response.get("result");
+        if (result == null) {
+            throw new IllegalArgumentException("No result found for placeId: " + placeId);
+        }
+
+        List<Map<String, Object>> components = (List<Map<String, Object>>) result.get("address_components");
+        if (components == null) {
+            throw new IllegalArgumentException("No address components found for placeId: " + placeId);
+        }
 
         for (Map<String, Object> comp : components) {
             List<String> types = (List<String>) comp.get("types");
-            if (types.contains("administrative_area_level_1")) {
-                return (String) comp.get("long_name");  // region/state
+            if (types != null && types.contains("administrative_area_level_1")) {
+                return (String) comp.get("long_name"); // region/state
             }
         }
-        return null;
+
+        return null; // fallback if no region found
     }
+
+
 
 }

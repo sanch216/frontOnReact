@@ -76,20 +76,20 @@ public class OrderService {
                 commonUtils.twoPointsInsideCity(oshGps,srcGps,destGps,cityRadInMeters)
         ) {
             priceKmRate = 50;
-            price = priceKmRate * distanceAtoBMeters;
+            price = priceKmRate * distanceAtoBMeters/1000;
             currentOrderType = OrderTypeEnum.LOCAL;
         }
         else if (distanceAtoBMeters > localOrderDistance && (destRegion.equals("Bishkek") || destRegion.equals("Osh City"))) {
             priceKmRate = 60;
-            price = priceKmRate * distanceAtoBMeters;
+            price = priceKmRate * distanceAtoBMeters/1000;
         }
         else if (distanceAtoBMeters > localOrderDistance) {
             priceKmRate = 70;
-            price = priceKmRate * distanceAtoBMeters;
+            price = priceKmRate * distanceAtoBMeters/1000;
         }
         else if (distanceAtoBMeters < localOrderDistance) {
             priceKmRate = 55;
-            price = priceKmRate * distanceAtoBMeters;
+            price = priceKmRate * distanceAtoBMeters/1000;
             currentOrderType = OrderTypeEnum.LOCAL;
         }
         else {

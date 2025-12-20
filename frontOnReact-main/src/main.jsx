@@ -9,13 +9,17 @@ import Welcome from './pages/Welcome';
 import Login from './pages/Login.jsx'
 import App from './App.jsx';
 import AddressAutocomplete from "./components/AddressAutocomplete.jsx";
+import RoutePage from "./pages/RoutePage.jsx";
+import {Autocomplete} from "@react-google-maps/api";
+
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <AuthProvider>
 
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<AddressAutocomplete />} />
+          <Route path="/register" element={<AddressAutocomplete/>} />
+        <Route path="/login" element={<RoutePage />} />
         <Route path="/" element={<Welcome />} />
         <Route path="/track" element={<Track />} />
 
